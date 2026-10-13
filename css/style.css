@@ -1,0 +1,252 @@
+/* 풀페이지 스크롤: 한 화면에 한 장씩, 화면보다 작은 이미지는 둘레를 같은 색(검정/연한 회색)으로 채움 */
+:root {
+  --offwhite: #ececea;            /* 눈부심을 줄인 흰색: 상단 바·흰 배경 화면 공통 */
+  --ink: #111;
+  --blue: #016dff;
+  --header-h: clamp(56px, 3.6vw, 76px);
+  --dur: 850ms;
+  --ease: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #000;
+}
+
+body {
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- 풀페이지 틀 ---------- */
+.fp {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fp-track {
+  height: 100%;
+  transition: transform var(--dur) var(--ease);
+  will-change: transform;
+}
+
+.fp-section {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-black { background: #000; }
+.bg-off { background: var(--offwhite); }
+
+/* 이미지가 놓이는 무대: 남는 공간은 배경색으로 채워짐 */
+.stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  container-type: size;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stage--top { align-items: flex-start; }
+.stage--bottom { align-items: flex-end; }
+
+/* 이미지 비율 그대로 화면 안에 꽉 차게 (잘리지 않음) */
+.frame {
+  position: relative;
+  z-index: 1;
+  width: min(100cqw, calc(100cqh * var(--w) / var(--h)));
+  aspect-ratio: var(--w) / var(--h);
+  container-type: inline-size;
+}
+
+.frame > img:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+}
+
+/* ---------- 1. 첫 화면 ---------- */
+.site-header {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 var(--header-h);
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 2.4vw, 48px);
+  padding-inline: max(16px, 6vw);
+  background: var(--offwhite);
+}
+
+.logo {
+  display: block;
+  height: calc(var(--header-h) * 0.46);
+  width: auto;
+}
+
+.gnb {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 1.55vw, 32px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(14px, 0.86vw, 17px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.gnb svg {
+  width: 0.62em;
+  height: 0.62em;
+  margin-left: 0.32em;
+  vertical-align: 0.02em;
+}
+
+.auth {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--header-h) * 0.6);
+  padding: 0 1.5em;
+  border-radius: 999px;
+  font-size: clamp(13px, 0.82vw, 16px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.btn-line {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+
+.btn-fill {
+  background: var(--blue);
+  color: #fff;
+}
+
+.stage--hero { background: #000; }
+
+/* 화면이 이미지보다 넓을 때 옆 여백을 이미지 가장자리 색(위 남색 → 아래 검정)으로 */
+.stage--hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: min(100cqh, calc(100cqw * 887 / 2000));
+  background: linear-gradient(to bottom,
+      rgb(1 11 24) 0%, rgb(1 11 23) 5%, rgb(2 11 22) 10%, rgb(2 11 20) 20%,
+      rgb(3 9 17) 30%, rgb(3 8 15) 40%, rgb(2 8 13) 50%, rgb(3 6 9) 60%,
+      rgb(2 3 5) 70%, rgb(1 1 2) 80%, #000 90%);
+}
+
+/* ---------- 6. 자주 묻는 질문 + 회사 정보 ---------- */
+.stage--faq { background: var(--offwhite); }
+
+/* 회사 정보(검정) 높이만큼 옆 여백도 검정으로 */
+.stage--faq::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: calc(min(100cqh, calc(100cqw * 975 / 2000)) * 0.32615);
+  background: #000;
+}
+
+/* 물음표 버튼: 빨간 화살표가 가리킨 자리(질문 목록 오른쪽, 회사 정보 바로 위) */
+.help-btn {
+  position: absolute;
+  left: 90.725%;
+  top: 56.87%;
+  width: 3.55%;
+  height: auto;
+  filter: drop-shadow(0 0.17cqw 0.25cqw rgb(0 0 0 / 0.14)) drop-shadow(0 0.41cqw 0.66cqw rgb(0 0 0 / 0.12));
+  pointer-events: none;
+}
+
+/* ---------- 오른쪽 화면 이동 점 ---------- */
+.fp-dots {
+  position: fixed;
+  z-index: 10;
+  top: 50%;
+  right: clamp(10px, 1.4vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #fff;
+  transform: translateY(-50%);
+  transition: color 0.4s;
+}
+
+.fp-dots[data-theme="light"] { color: #222; }
+
+.fp-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.fp-dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.fp-dot:hover::before { opacity: 0.7; }
+
+.fp-dot[aria-current="true"]::before {
+  opacity: 1;
+  transform: scale(1.35);
+}
+
+.fp-dot:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  border-radius: 50%;
+}
+
+/* ---------- 좁은 화면 ---------- */
+@media (max-width: 900px) {
+  .gnb { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 1ms; }
+}
